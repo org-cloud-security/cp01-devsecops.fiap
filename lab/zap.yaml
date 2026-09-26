@@ -16,12 +16,19 @@ jobs:
     parameters:
       context: app
 
-  # grava o relatorio HTML em ./reports
+  # grava o relatorio legivel em ./reports
   - type: report
     parameters:
       reportDir: /zap/wrk
       reportFile: zap
       template: traditional-html
+
+  # grava o mesmo resultado em json, usado como evidencia na analise dos achados
+  - type: report
+    parameters:
+      reportDir: /zap/wrk
+      reportFile: zap
+      template: traditional-json
 
   # gate: sai com exit 1 se houver alerta de risco High
   - type: exitStatus
