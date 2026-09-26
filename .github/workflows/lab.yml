@@ -1,0 +1,26 @@
+name: lab
+
+on:
+  push:
+    paths:
+      - "lab/**"
+  pull_request:
+    paths:
+      - "lab/**"
+
+jobs:
+  checkov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose run --rm checkov
+        working-directory: lab
+
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d app
+        working-directory: lab
+      - run: docker compose run --rm zap
+        working-directory: lab
