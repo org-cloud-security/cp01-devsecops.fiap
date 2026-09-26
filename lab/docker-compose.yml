@@ -1,0 +1,21 @@
+services:
+  app:
+    build: ./app
+    ports:
+      - "3000:3000"
+
+  checkov:
+    image: bridgecrew/checkov:3.3.20
+    volumes:
+      - ./iac:/iac
+      - ./reports:/reports
+    command: -d /iac --compact -o cli -o github_failed_only --output-file-path console,/reports/checkov.md
+
+  zap:
+    image: zaproxy/zap-stable:2.17.0
+    depends_on:
+      - app
+    volumes:
+      - ./reports:/zap/wrk
+      - ./zap.yaml:/zap/zap.yaml
+    command: zap.sh -cmd -autorun /zap/zap.yaml
