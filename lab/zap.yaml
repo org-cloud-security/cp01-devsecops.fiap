@@ -1,0 +1,29 @@
+env:
+  contexts:
+    # escopo do scan: o ZAP so toca URLs que casam com esta lista
+    - name: app
+      urls:
+        - http://app:3000
+
+jobs:
+  # navega o site e descobre as URLs que serao testadas
+  - type: spider
+    parameters:
+      context: app
+
+  # injeta payloads nas URLs descobertas e levanta os alertas
+  - type: activeScan
+    parameters:
+      context: app
+
+  # grava o relatorio HTML em ./reports
+  - type: report
+    parameters:
+      reportDir: /zap/wrk
+      reportFile: zap
+      template: traditional-html
+
+  # gate: sai com exit 1 se houver alerta de risco High
+  - type: exitStatus
+    parameters:
+      errorLevel: High
