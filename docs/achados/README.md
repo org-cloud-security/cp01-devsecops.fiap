@@ -54,28 +54,41 @@ São duas regras distintas apontando para a mesma linha de código. Contam como 
 
 ### Correção
 
-A mesma do achado 1. Uma única linha alterada elimina os dois alertas, o que foi verificado na execução após a correção.
+A mesma do achado 1. Uma única linha alterada elimina os dois alertas de risco High, o que foi verificado na execução após a correção.
 
-## 3. Source Code Disclosure na rota /hello
+## 3. Missing Anti-clickjacking Header
 
-**Ferramenta:** OWASP ZAP, regra 43
-**Risco:** High (confiança Medium)
-**CWE:** [CWE-541](https://cwe.mitre.org/data/definitions/541.html), Inclusion of Sensitive Information in an Include File
-**Veredito:** falso positivo
+**Ferramenta:** OWASP ZAP, regra 10020
+**Risco:** Medium (confiança Medium)
+**CWE:** [CWE-1021](https://cwe.mitre.org/data/definitions/1021.html), Improper Restriction of Rendered UI Layers or Frames
+**Veredito:** falso positivo neste contexto
 
 ### Justificativa
 
-O ZAP alega que a rota expõe código-fonte. A aplicação inteira tem quinze linhas e uma única rota, que devolve a string `Hello, ` concatenada ao parâmetro recebido. Não há leitura de arquivo, include, template engine nem qualquer caminho pelo qual código-fonte pudesse chegar à resposta.
+O ZAP aponta a ausência dos cabeçalhos `X-Frame-Options` e `Content-Security-Policy: frame-ancestors`, que impedem a página de ser carregada dentro de um iframe de terceiros. A verificação em si está correta: os cabeçalhos realmente não existem, o que se confirma com
 
-O campo `evidence` do alerta veio vazio, ou seja, a ferramenta não apontou qual trecho de código teria vazado. O `attack` registrado foi a string `hello`, o próprio nome da rota.
+```bash
+curl -si http://localhost:3000/ | grep -i "x-frame\|content-security"
+```
 
-A heurística da regra procura padrões que lembrem código na resposta. Como a aplicação devolve a entrada do usuário sem tratamento, o payload refletido foi interpretado como código-fonte vazado.
+O comando não retorna nada.
 
-O alerta desaparece junto com a correção do XSS, o que confirma o diagnóstico: o gatilho era o reflexo da entrada, não exposição real de código.
+O que torna o alerta um falso positivo é o critério de impacto. Clickjacking depende de induzir a vítima a clicar em um elemento sobreposto para executar uma ação com efeito colateral. A aplicação do laboratório tem duas rotas, ambas GET, nenhuma com formulário, botão, sessão ou qualquer ação com estado. Não existe ação que um atacante pudesse induzir por sobreposição.
+
+A regra é puramente passiva: verifica a presença do cabeçalho sem avaliar se a página tem algo a proteger. O alerta é tecnicamente verdadeiro e praticamente irrelevante, que é a assinatura de um falso positivo por falta de contexto.
+
+Em uma aplicação real com autenticação e formulários, o mesmo alerta seria verdadeiro positivo. É o contexto que muda o veredito, não a evidência.
+
+Observação sobre reprodutibilidade: em execuções consecutivas do mesmo plano, sem qualquer alteração no código, este alerta apareceu em algumas e não em outras. O spider percorre a aplicação a cada execução e nem sempre alcança as mesmas URLs, de modo que alertas passivos podem variar entre scans. Os dois alertas de XSS, levantados pelo active scan, se mantiveram estáveis em todas as execuções.
 
 ### Correção
 
-Nenhuma correção é necessária na aplicação. O tratamento adequado seria suprimir a regra 43 para esta rota via arquivo de configuração do ZAP, após documentar a análise.
+Nenhuma correção é necessária nesta aplicação. Em um cenário real, a proteção viria do `helmet`, que define `X-Frame-Options: SAMEORIGIN` por padrão:
+
+```js
+const helmet = require("helmet");
+app.use(helmet());
+```
 
 ## 4. SSH liberado para a internet
 
@@ -106,7 +119,7 @@ Após a correção o Checkov reporta `Passed checks: 4, Failed checks: 0` e exit
 | --- | --- | --- | --- | --- |
 | 1 | OWASP ZAP | 40012 | verdadeiro positivo | CWE-79 |
 | 2 | OWASP ZAP | 40026 | verdadeiro positivo, mesmo defeito do 1 | CWE-79 |
-| 3 | OWASP ZAP | 43 | falso positivo | CWE-541 |
+| 3 | OWASP ZAP | 10020 | falso positivo neste contexto | CWE-1021 |
 | 4 | Checkov | CKV_AZURE_10 | verdadeiro positivo | CWE-284 |
 
 Quatro alertas de três regras distintas se resolvem com duas linhas de código alteradas.
