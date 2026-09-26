@@ -56,11 +56,11 @@ O DAST é a única das quatro que exige a aplicação em execução, e é por is
 
 | Item | Valor |
 | --- | --- |
-| Repositório | `semgrep/semgrep` |
+| Ano de origem | 2020, derivado do `sgrep`, ferramenta interna criada no Facebook |
+| Mantenedor | Semgrep, Inc. (antiga r2c) |
 | Licença | LGPL-2.1 |
 | Linguagem | OCaml, com interface em Python |
-| Criação do repositório | 13/12/2019 |
-| Mantenedor | Semgrep, Inc. (antiga r2c) |
+| Repositório | `semgrep/semgrep`, criado em 13/12/2019 |
 
 Atividade do projeto, consultada pela API do GitHub em 28/09/2026: 16.786 estrelas, 1.073 forks, 205 contribuidores e 1.027 commits nos últimos doze meses. A versão estável mais recente é a v1.178.0, publicada em 23/09/2026. A versão usada nas medições foi a 1.177.0.
 
@@ -97,7 +97,19 @@ docker run --rm -v "$PWD/lab":/src -w /src semgrep/semgrep:latest \
 
 **Supressão de falso positivo.** O Semgrep aceita o comentário `nosemgrep` na linha anterior ao achado, opcionalmente com o identificador da regra, o que limita a supressão àquela regra específica.
 
-**Regras próprias.** As regras são escritas em YAML e o padrão usa a sintaxe da linguagem alvo, com metavariáveis em maiúsculas para representar trechos variáveis.
+**Regras próprias.** As regras são escritas em YAML e o padrão usa a sintaxe da linguagem alvo, com metavariáveis em maiúsculas para representar trechos variáveis. Uma regra que detecte o defeito da aplicação do laboratório teria esta forma:
+
+```yaml
+rules:
+  - id: express-send-user-input
+    patterns:
+      - pattern: $RES.send(... $REQ.query.$P ...)
+    message: Entrada do usuario enviada na resposta sem escape
+    languages: [javascript]
+    severity: WARNING
+```
+
+O padrão descreve o código procurado quase como ele é escrito, o que distingue o Semgrep de ferramentas cujas regras exigem conhecer a representação interna da AST.
 
 ### d. Integração
 
@@ -110,7 +122,9 @@ O Semgrep gera SARIF nativamente, o que permite enviar os achados ao GitHub Code
   uses: github/codeql-action/upload-sarif@v4
 ```
 
-A ferramenta também roda como hook de pre-commit e tem extensões de IDE, o que a coloca no estágio mais à esquerda possível do pipeline: o defeito pode ser apontado antes mesmo do commit.
+**DefectDojo.** O parser "Semgrep JSON Report" consome o relatório em JSON, formato produzido pela flag `--json-output`. A verificação foi feita lendo o código do parser no repositório do DefectDojo.
+
+**IDE e pre-commit.** A ferramenta roda como hook de pre-commit e tem extensões de IDE, o que a coloca no estágio mais à esquerda possível do pipeline: o defeito pode ser apontado antes mesmo do commit.
 
 ### e. Avaliação crítica
 
@@ -131,17 +145,19 @@ A diferença está no custo e no momento. O Semgrep apontou a linha 9 do arquivo
 
 **Cenário ideal.** Verificação em todo pull request e como hook de pre-commit, no estágio Code do pipeline, com envio dos achados ao Code Scanning.
 
+**Por que escolher esta.** Entre as opções de SAST open source, o Semgrep foi escolhido por três razões medidas no trabalho. A primeira é o custo de execução: 84 segundos contra 223 regras, tempo compatível com a verificação em todo pull request. A segunda é a sintaxe de regras, que permite ao grupo escrever verificações próprias sem estudar a representação interna da árvore sintática. A terceira é a saída em SARIF nativa, que elimina qualquer conversão intermediária para chegar ao Code Scanning.
+
 ## 5. Checkov (IaC Security)
 
 ### a. Identificação
 
 | Item | Valor |
 | --- | --- |
-| Repositório | `bridgecrewio/checkov` |
+| Ano de origem | 2019 |
+| Mantenedor | Bridgecrew, adquirida pela Palo Alto Networks em 2021 |
 | Licença | Apache-2.0 |
 | Linguagem | Python |
-| Criação do repositório | 27/11/2019 |
-| Mantenedor | Bridgecrew, adquirida pela Palo Alto Networks |
+| Repositório | `bridgecrewio/checkov`, criado em 27/11/2019 |
 
 Atividade do projeto, consultada pela API do GitHub em 28/09/2026: 9.035 estrelas, 1.422 forks, 381 contribuidores e 239 commits nos últimos doze meses. A versão estável mais recente é a 3.3.20, publicada em 27/09/2026, que foi a usada nas medições.
 
@@ -182,11 +198,36 @@ A combinação `console,/reports/checkov.md` mapeia posicionalmente: a primeira 
 
 **Formatos de saída.** O Checkov não gera HTML. Dos formatos disponíveis, o `github_failed_only` produz uma tabela Markdown legível, que renderiza diretamente no GitHub. Esta é uma assimetria prática em relação ao ZAP, que entrega HTML pronto com uma única flag.
 
-**Supressão de falso positivo.** É feita por comentário no próprio manifesto, com `checkov:skip=<ID>:<justificativa>`, o que mantém a justificativa versionada junto ao código.
+**Supressão de falso positivo.** É feita por comentário no próprio manifesto, o que mantém a justificativa versionada junto ao código:
+
+```hcl
+resource "azurerm_network_security_group" "lab" {
+  # checkov:skip=CKV_AZURE_10:regra de bastion, acesso restrito por Just-in-Time
+}
+```
+
+**Regras próprias.** O Checkov aceita políticas customizadas em Python ou em YAML. A versão em YAML descreve a condição diretamente sobre os atributos do recurso, sem exigir código:
+
+```yaml
+metadata:
+  id: "CKV_CUSTOM_1"
+  name: "NSG nao deve liberar SSH em notacao CIDR ampla"
+definition:
+  cond_type: attribute
+  resource_types:
+    - azurerm_network_security_group
+  attribute: security_rule.source_address_prefix
+  operator: not_equals
+  value: "0.0.0.0/0"
+```
+
+Esta política cobre exatamente o falso negativo descrito na avaliação crítica desta seção, em que a política nativa aprova a notação CIDR.
 
 ### d. Integração
 
 O Checkov gera SARIF, integrando-se ao GitHub Code Scanning, e roda como hook de pre-commit. Há também extensões de IDE mantidas pelo projeto.
+
+**DefectDojo.** O parser "Checkov Scan" consome o relatório em JSON, produzido com `-o json`. A verificação foi feita lendo o código do parser no repositório do DefectDojo.
 
 ### e. Avaliação crítica
 
@@ -209,17 +250,19 @@ As duas configurações expõem a porta 22 à internet inteira. A ferramenta rep
 
 **Cenário ideal.** Verificação de manifestos de infraestrutura em pull request e novamente antes do apply, no estágio Deploy, dado que valores resolvidos em tempo de execução podem alterar o resultado.
 
+**Por que escolher esta.** O Checkov cobre a maior variedade de formatos entre as ferramentas de IaC analisadas, o que evita adotar uma ferramenta por tecnologia de infraestrutura. A execução é a mais rápida da toolchain, cerca de 20 segundos, e não depende de rede, ao contrário do Semgrep com `--config auto` e do Dependency-Check com a base da NVD. A ressalva, medida neste trabalho, é que a ausência de severidade na versão gratuita o torna inadequado como gate por criticidade.
+
 ## 6. OWASP ZAP (DAST)
 
 ### a. Identificação
 
 | Item | Valor |
 | --- | --- |
-| Repositório | `zaproxy/zaproxy` |
+| Ano de origem | 2010, como fork do Paros Proxy |
+| Mantenedor | ZAP Core Team, com apoio da Checkmarx desde setembro de 2024 |
 | Licença | Apache-2.0 |
 | Linguagem | Java |
-| Origem | Fork do Paros Proxy, primeira versão em 2010 |
-| Mantenedor | ZAP Core Team, com apoio da Checkmarx desde setembro de 2024 |
+| Repositório | `zaproxy/zaproxy`, migrado para o GitHub em 03/06/2015 |
 
 Atividade do projeto, consultada pela API do GitHub em 28/09/2026: 15.839 estrelas, 2.650 forks, 239 contribuidores e 378 commits nos últimos doze meses. A versão estável mais recente é a 2.17.0, publicada em 15/12/2025, que foi a usada nas medições.
 
@@ -259,13 +302,24 @@ Os três modos disponíveis:
 
 **Exit codes dos scripts empacotados:** 0 para sucesso, 1 para ao menos um FAIL, 2 para ao menos um WARN sem FAIL, 3 para outra falha.
 
-**Supressão de falso positivo.** O arquivo de configuração passado com `-c` define, por identificador de regra, se o alerta é tratado como WARN, IGNORE ou FAIL. Também é possível excluir URLs específicas de uma regra com `OUTOFSCOPE` seguido de uma expressão regular.
+**Supressão de falso positivo.** O arquivo de configuração passado com `-c` define, por identificador de regra, se o alerta é tratado como WARN, IGNORE ou FAIL. O formato é uma linha por regra:
+
+```
+10020	IGNORE	(Missing Anti-clickjacking Header)
+10096	OUTOFSCOPE	http://app:3000/style.css
+```
+
+A segunda forma desativa a regra apenas para as URLs que casam com a expressão, mantendo-a ativa no resto da aplicação.
+
+**Regras próprias.** O ZAP permite escrever regras de varredura passiva e ativa como scripts, em linguagens suportadas pelo motor de scripts, além de aceitar modelos de ataque próprios. Para o escopo deste trabalho, as regras nativas foram suficientes e nenhuma regra própria foi escrita.
 
 ### d. Integração
 
 O projeto mantém GitHub Actions oficiais para baseline, full scan, API scan e para o Automation Framework. O ZAP gera SARIF por meio do template `sarif-json`, o que permite enviar os achados ao GitHub Code Scanning.
 
-Não há plugin de IDE, e pre-commit não se aplica: a ferramenta exige a aplicação em execução, condição que não existe nessa etapa.
+**DefectDojo.** O parser "ZAP Scan" consome o relatório em **XML**, e não em JSON ou HTML. A verificação foi feita lendo o código do parser, que usa `ElementTree`. Isso tem consequência prática para este trabalho: o plano de automação do laboratório gera HTML e JSON, de modo que a importação para o DefectDojo exigiria adicionar um terceiro job de relatório em XML.
+
+**IDE e pre-commit.** Não há plugin de IDE, e pre-commit não se aplica: a ferramenta exige a aplicação em execução, condição que não existe nessa etapa.
 
 ### e. Avaliação crítica
 
@@ -297,6 +351,8 @@ Os dois alertas de XSS, levantados pelo scan ativo, mantiveram-se estáveis em t
 **Taxa de falso positivo observada.** Dos alertas levantados contra a aplicação do laboratório, os dois de risco alto são verdadeiros positivos, confirmados por reprodução manual. O alerta de clickjacking, de risco médio, é tecnicamente correto mas irrelevante no contexto: a aplicação não tem formulário, sessão nem ação com efeito colateral que pudesse ser induzida por sobreposição.
 
 **Cenário ideal.** Estágio Test do pipeline, em ambiente isolado, com o plano de automação declarando o gate por severidade.
+
+**Por que escolher esta.** O ZAP é a única ferramenta da toolchain que observa o sistema como ele efetivamente responde, e a única cujo código de saída pode ser condicionado à severidade real do achado, o que o torna o gate de criticidade do pipeline. Some-se a maturidade do projeto, ativo desde 2010, e a existência de imagens Docker e GitHub Actions oficiais, que eliminam trabalho de integração.
 
 ## 7. Seções transversais
 
@@ -401,5 +457,3 @@ A recomendação de toolchain que decorre dessas medições é colocar Semgrep e
 24. FORTINET. *Dynamic Application Security Testing (DAST)*. Disponível em: https://www.fortinet.com/br/resources/cyberglossary/dynamic-application-security-testing
 25. ZAP. *Automate Security Testing with ZAP and GitHub Actions*. Disponível em: https://www.zaproxy.org/blog/2020-04-09-automate-security-testing-with-zap-and-github-actions/
 26. GITHUB. *bridgecrewio/checkov*. Disponível em: https://github.com/bridgecrewio/checkov
-
-Acesso a todas as fontes em 28 de setembro de 2026.
