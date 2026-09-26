@@ -5,9 +5,9 @@
 | Membro | Ferramenta | Pastas | Extras |
 | --- | --- | --- | --- |
 | Luiz (TL) | Checkov | `iac/`, `.github/workflows/`, `docker-compose.yml`, `LAB.md` | `.tf` e Dockerfile inseguros, pipeline com gate |
-| Guylherme | OWASP ZAP | `app/` | App vulnerável, análise dos 3 achados |
+| Anderson | OWASP ZAP | `app/` | App vulnerável, análise dos 3 achados |
 | Bruno (relator) | Dependency-Check | `docs/document/`, `USO-DE-IA.md` | Seção f, ABNT, fontes |
-| Anderson | Semgrep | `docs/slides/` | Slides, vídeo do plano B, 2 perguntas de verificação |
+| Guylherme | Semgrep | `docs/slides/` | Slides, vídeo do plano B, 2 perguntas de verificação |
 
 Cada membro também é dono de:
 
@@ -23,7 +23,7 @@ Todos: apresentar a sua parte, revisar PRs, testar o lab em máquina alheia e ex
 
 ## Ordem
 
-1. Guylherme (`app/`) e Luiz (`iac/`) entregam primeiro: o restante depende disso.
+1. Anderson (`app/`) e Luiz (`iac/`) entregam primeiro: o restante depende disso.
 2. Em paralelo, todos estudam na `study/*` e escrevem os itens a–d da sua ferramenta.
 3. Com `app/` e `iac/` na `main`, cada um roda sua ferramenta, versiona o relatório e escreve o item e.
 4. Por fim: documento, slides e teste do lab em máquina alheia.
