@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: chmod -R 777 reports
+      # o container do zap roda como uid 1000 e precisa escrever o relatorio
+      - run: sudo chown -R 1000:1000 reports
         working-directory: lab
       - run: docker compose up -d app
         working-directory: lab
