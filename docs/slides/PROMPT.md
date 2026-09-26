@@ -14,6 +14,21 @@ Tipografia Poppins em toda a apresentação. Escala de tamanhos em múltiplos de
 
 Grade de 8 pontos para todo espaçamento e alinhamento. Margem generosa, pelo menos 64 de respiro nas bordas. Alinhamento à esquerda, exceto na capa.
 
+## Ícones das ferramentas
+
+Cada ferramenta deve aparecer com o seu logo oficial, não com ícone genérico de segurança. O logo entra no slide de abertura da ferramenta, no quadro comparativo e no diagrama do pipeline.
+
+| Ferramenta | Logo | Onde obter o SVG |
+| --- | --- | --- |
+| Semgrep | marca própria, em verde | https://semgrep.dev |
+| OWASP Dependency-Check | logo da OWASP | https://owasp.org |
+| Checkov | marca da Bridgecrew, em laranja | https://www.checkov.io |
+| OWASP ZAP | logo do ZAP, o alvo com a flecha | https://www.zaproxy.org |
+
+Se o logo colorido brigar com a paleta azul do slide, use a versão monocromática da marca em cinza escuro. Nunca recrie o logo à mão nem substitua por ícone genérico de cadeado, escudo ou lupa.
+
+Os logos devem ter o mesmo tamanho óptico entre si e ficar alinhados à mesma linha de base quando aparecerem lado a lado.
+
 ## Regras de conteúdo
 
 Máximo 5 linhas de texto por slide. Cada slide comunica **uma** ideia. Quando houver dado numérico, ele é o elemento visual dominante do slide, em tamanho grande, com a explicação em legenda pequena abaixo.
