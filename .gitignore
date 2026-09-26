@@ -3,3 +3,5 @@ credentials.txt
 # cache local da base da NVD usada pelo dependency-check, cerca de 450 MB
 lab/dc-data/
 lab/dc-run.log
+lab/dc-out/
+lab/app/node_modules/
