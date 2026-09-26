@@ -147,6 +147,122 @@ A diferença está no custo e no momento. O Semgrep apontou a linha 9 do arquivo
 
 **Por que escolher esta.** Entre as opções de SAST open source, o Semgrep foi escolhido por três razões medidas no trabalho. A primeira é o custo de execução: 84 segundos contra 223 regras, tempo compatível com a verificação em todo pull request. A segunda é a sintaxe de regras, que permite ao grupo escrever verificações próprias sem estudar a representação interna da árvore sintática. A terceira é a saída em SARIF nativa, que elimina qualquer conversão intermediária para chegar ao Code Scanning.
 
+## 4. OWASP Dependency-Check (SCA)
+
+### a. Identificação
+
+| Item | Valor |
+| --- | --- |
+| Ano de origem | 2012 |
+| Mantenedor | Jeremy Long e comunidade, sob a OWASP |
+| Licença | Apache-2.0 |
+| Linguagem | Java |
+| Repositório | `dependency-check/DependencyCheck`, criado em 03/09/2012 |
+
+Atividade do projeto, consultada pela API do GitHub em 28/09/2026: 7.709 estrelas, 323 contribuidores e 520 commits nos últimos doze meses. A versão estável mais recente é a v13.0.0, publicada em 03/08/2026, que foi a usada nas medições.
+
+É o projeto mais antigo da toolchain, com catorze anos de existência.
+
+Cabe um registro de verificação: existe também o repositório `jeremylong/DependencyCheck`, que aparece com frequência em resultados de busca. Trata-se de um fork criado em 2025, com 55 estrelas e nenhum commit nos últimos doze meses. O repositório oficial é o indicado na tabela acima.
+
+### b. Fundamento técnico
+
+O Dependency-Check identifica as dependências declaradas pelo projeto e verifica se existem vulnerabilidades conhecidas associadas a elas. O processo tem duas etapas.
+
+Primeiro, a ferramenta extrai evidências de cada arquivo analisado e tenta associá-las a um identificador padronizado de produto, o CPE (Common Platform Enumeration). Depois, consulta a base da NVD por vulnerabilidades registradas para aquele CPE.
+
+Essa dependência do CPE é a origem da principal fragilidade da ferramenta: a associação é heurística, o que produz tanto falsos positivos, quando o nome de uma biblioteca coincide com o de outro produto, quanto falsos negativos, quando a associação não é feita.
+
+**O que detecta:** vulnerabilidades publicamente conhecidas em bibliotecas de terceiros, com identificador CVE e pontuação CVSS.
+
+**O que não detecta:** vulnerabilidades no código escrito pela equipe, que são domínio do SAST; falhas ainda não publicadas em base pública; e dependências que não estejam declaradas nos formatos que a ferramenta reconhece.
+
+### c. Instalação e uso
+
+A execução do grupo usou a imagem Docker oficial:
+
+```bash
+docker run --rm \
+  -v "$PWD/app":/src -v "$PWD/dc-out":/report \
+  -v "$PWD/dc-data":/usr/share/dependency-check/data \
+  owasp/dependency-check:latest \
+  --scan /src --format JSON --format HTML --project "lab-app" --out /report \
+  --nvdApiKey "<chave>"
+```
+
+| Flag | Função |
+| --- | --- |
+| `--scan` | Caminho a ser analisado |
+| `--format` | Formato do relatório: HTML, JSON, XML, CSV, SARIF, JUNIT ou ALL |
+| `--out` | Diretório de saída |
+| `--nvdApiKey` | Chave de acesso à API da NVD |
+| `--failOnCVSS` | Encerra com código diferente de zero acima da pontuação CVSS indicada, usado como gate |
+| `--suppression` | Arquivo XML de supressão de falso positivo |
+| `--noupdate` | Não atualiza a base, usando apenas o cache local |
+
+O volume montado em `/usr/share/dependency-check/data` é o que preserva a base entre execuções. Sem ele, a base é baixada novamente a cada scan.
+
+**Supressão de falso positivo.** É feita por arquivo XML, no qual cada supressão declara a dependência afetada e o CVE a ignorar, com justificativa.
+
+### d. Integração
+
+**CI/CD.** Há uma GitHub Action oficial e plugins para Maven, Gradle, Ant e Jenkins.
+
+**SARIF.** A ferramenta gera SARIF desde a versão 6, o que permite envio ao GitHub Code Scanning.
+
+**DefectDojo.** O parser "Dependency Check Scan" consome o relatório em **XML**, verificado por leitura do código do parser, que usa `ElementTree`. Como o laboratório gera JSON e HTML, a importação exigiria adicionar `--format XML`.
+
+**IDE e pre-commit.** Não há extensão de IDE mantida pelo projeto. O uso como hook de pre-commit é inviável pelo tempo de execução e pelo tamanho da base local.
+
+### e. Avaliação crítica
+
+Esta foi a ferramenta que exigiu mais tentativas até produzir um resultado válido, e as falhas do caminho são o material mais útil desta seção.
+
+**Primeira execução: sem chave da NVD.** A ferramenta encerrou com erro fatal, sem gerar relatório:
+
+```
+NvdApiException: Invalid API Key, length of 0 too short to provided a masked partial key
+[ERROR] Error updating the NVD Data
+```
+
+A chave é gratuita, mas exige cadastro prévio. Esta é uma diferença relevante em relação às outras três ferramentas da toolchain, que executam sem qualquer credencial.
+
+**Segunda execução: com chave, sem lock file.** A ferramenta rodou, mas analisou apenas 2 arquivos e relatou 0 vulnerabilidades. O resultado parece limpo e não é: nenhuma dependência havia sido resolvida.
+
+**Terceira execução: com lock file, sem node_modules.** Ainda insuficiente. O log foi explícito:
+
+```
+[WARN] Analyzing `/src/package-lock.json` - however, the node_modules directory
+does not exist. Please run `npm install` prior to running dependency-check
+```
+
+**Quarta execução: com `npm install` executado.** Resultado válido: **265 dependências analisadas, 0 vulnerabilidades encontradas**.
+
+A observação crítica é que as execuções 2 e 3 produziram relatórios de aparência normal, com zero vulnerabilidades, sem qualquer erro visível no resultado final. Um pipeline configurado dessa forma passaria no gate indefinidamente sem nunca ter analisado uma única biblioteca. **Zero achados não significa ausência de vulnerabilidade; pode significar ausência de análise.**
+
+**Tempos medidos.**
+
+| Etapa | Tempo |
+| --- | --- |
+| Download inicial da base da NVD, 398.697 registros | 34 min 34 s |
+| Execução com a base em cache | 9 s |
+
+A diferença entre a primeira execução e as seguintes é de mais de duzentas vezes. Em pipeline, isso torna o cache da base um requisito, não uma otimização.
+
+**Falha de rede durante o download.** Uma das tentativas foi interrompida em 40% com `java.net.UnknownHostException: www.cisa.gov: Name does not resolve`, pois a ferramenta também consulta a lista de vulnerabilidades exploradas conhecidas da CISA e o repositório do RetireJS. O download precisou recomeçar do zero.
+
+**Analisador desabilitado por falta de credencial.** O log registrou que o Sonatype OSS Index foi desativado por ausência de token, o que reduz o conjunto de fontes consultadas sem que isso apareça no relatório final.
+
+**Taxa de falso positivo observada.** Não foi possível medir, pois o scan válido não produziu nenhum achado. As dependências do laboratório são Express 5.2.1 e Helmet 8.3.0, ambas em versões recentes e sem CVE registrada. Registrar isso é mais honesto do que apresentar uma taxa que não foi observada.
+
+Esse resultado ilustra uma característica do SCA: seu valor é proporcional ao tamanho e à idade da árvore de dependências. Em uma aplicação com duas dependências diretas e recentes, a ferramenta corretamente não encontra nada.
+
+**Limitações encontradas.** A necessidade de chave da NVD, o tempo de download inicial, a exigência de dependências efetivamente instaladas e a dependência de heurística de CPE fazem desta a ferramenta de operação mais custosa entre as quatro analisadas.
+
+**Cenário ideal.** Estágio Build do pipeline, após a instalação de dependências, com a base da NVD em cache persistente e gate configurado por `--failOnCVSS`.
+
+**Por que escolher esta.** É a ferramenta de SCA da própria OWASP, com catorze anos de projeto e 520 commits nos últimos doze meses. Gera SBOM em CycloneDX e relatório HTML legível sem ferramenta adicional. A ressalva é operacional: exige credencial, cache e dependências instaladas, três condições que precisam estar explícitas no pipeline para que o resultado signifique alguma coisa.
+
 ## 5. Checkov (IaC Security)
 
 ### a. Identificação
@@ -405,10 +521,10 @@ O Dependency-Check gera SBOM em CycloneDX, e o Checkov também suporta os format
 | Linguagem | OCaml | Java | Python | Java |
 | Aplicação no ar | Não | Não | Não | Sim |
 | Severidade nativa | Sim | Sim (CVSS) | Não na versão gratuita | Sim |
-| Gera SARIF | Sim | Não nativamente | Sim | Sim (template) |
+| Gera SARIF | Sim | Sim | Sim | Sim (template) |
 | Relatório HTML | Não | Sim | Não | Sim |
 | Pre-commit | Sim | Não | Sim | Não |
-| Tempo medido pelo grupo | 84 s | Ver seção 4 | 20 s | 57 s |
+| Tempo medido pelo grupo | 84 s | 9 s com cache, 34 min sem | 20 s | 57 s |
 | Depende de rede | Sim (`--config auto`) | Sim (base NVD) | Não | Não |
 
 ## 8. Conclusão
