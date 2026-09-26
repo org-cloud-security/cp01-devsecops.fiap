@@ -1,12 +1,6 @@
 name: lab
 
-on:
-  push:
-    paths:
-      - "lab/**"
-  pull_request:
-    paths:
-      - "lab/**"
+on: [push, pull_request]
 
 jobs:
   checkov:
