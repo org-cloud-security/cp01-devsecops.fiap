@@ -6,12 +6,6 @@ Duas ferramentas, duas categorias. Em cada uma: rode o scan, veja o gate quebrar
 
 - Docker e Docker Compose
 - `git clone` deste repositório feito **antes** da aula
-- Imagens baixadas antes da aula:
-
-```bash
-docker pull bridgecrew/checkov:3.3.20
-docker pull zaproxy/zap-stable:2.17.0
-```
 
 Todos os comandos rodam a partir de `lab/`:
 
