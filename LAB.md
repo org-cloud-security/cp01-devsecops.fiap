@@ -1,4 +1,4 @@
-# Laboratório — Checkov (IaC) e OWASP ZAP (DAST)
+# Laboratório: Checkov (IaC) e OWASP ZAP (DAST)
 
 Duas ferramentas, duas categorias. Em cada uma: rode o scan, veja o gate quebrar, corrija uma linha, rode de novo.
 
@@ -19,13 +19,13 @@ Todos os comandos rodam a partir de `lab/`:
 cd lab
 ```
 
-## Fase 1 — Checkov encontra SSH aberto
+## Fase 1: Checkov encontra SSH aberto
 
 ```bash
 docker compose run --rm checkov
 ```
 
-Esperado: `Failed checks: 1` — `CKV_AZURE_10`. **Exit code 1**, o gate quebrou.
+Esperado: `Failed checks: 1`, check `CKV_AZURE_10`. **Exit code 1**, o gate quebrou.
 
 Confira o exit code:
 
@@ -33,7 +33,7 @@ Confira o exit code:
 echo $?
 ```
 
-## Fase 2 — Corrigir o Terraform
+## Fase 2: Corrigir o Terraform
 
 Em `iac/main.tf`, comente a linha marcada como `VULNERAVEL` e descomente a de `CORRECAO`:
 
@@ -50,7 +50,7 @@ docker compose run --rm checkov
 
 Esperado: `Passed checks: 4, Failed checks: 0`. **Exit code 0**.
 
-## Fase 3 — ZAP encontra XSS refletido
+## Fase 3: ZAP encontra XSS refletido
 
 Suba a aplicação e rode o scan (leva de 2 a 4 minutos):
 
@@ -69,7 +69,7 @@ http://localhost:3000/hello?name=<script>alert(1)</script>
 
 O relatório completo fica em `reports/zap.html`.
 
-## Fase 4 — Corrigir a aplicação
+## Fase 4: Corrigir a aplicação
 
 Em `app/index.js`, comente a linha `VULNERAVEL` e descomente a de `CORRECAO`:
 
@@ -87,7 +87,7 @@ docker compose run --rm zap
 
 Esperado: `Automation plan succeeded!`. **Exit code 0**.
 
-## Fase 5 — Encerrar
+## Fase 5: Encerrar
 
 ```bash
 docker compose down
