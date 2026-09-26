@@ -1,20 +1,51 @@
 # Roteiro da apresentação
 
-30 minutos, 4 apresentadores. Desconto de 2 pontos por minuto excedido.
+30 minutos, 4 apresentadores, 25 slides. Desconto de 2 pontos por minuto excedido.
+
+## O que a apresentação precisa ter
+
+Exigências do enunciado, todas mapeadas nos slides abaixo.
+
+| Exigência | Onde |
+| --- | --- |
+| Capa | slide 1 |
+| Agenda | slide 2 |
+| Fundamentação | slides 3 e 4 |
+| Demo | slides 17 a 20 |
+| Quadro comparativo | slide 21 |
+| Limitações | slide 23 |
+| 20 a 30 slides | 25 slides |
+| Máximo 30 minutos | 30 min exatos |
+| Entrega em `.pptx` **e** `.pdf` | D-1 |
+
+Rubrica da apresentação, 20 pontos: clareza e domínio 8, slides 4, tempo 4, participação equilibrada 4.
 
 ## Divisão do tempo
 
 | Bloco | Tempo | Quem | Slides |
 | --- | --- | --- | --- |
-| Abertura e posicionamento no pipeline | 3 min | Luiz | 1 a 4 |
+| Abertura e posicionamento no pipeline | 3 min | Guylherme | 1 a 4 |
 | As 4 ferramentas | 10 min | cada um a sua | 5 a 16 |
 | Laboratório guiado | 12 min | Luiz e Anderson | 17 a 20 |
 | Comparativo, limitações e conclusão | 3 min | Bruno | 21 a 24 |
 | Perguntas | 2 min | todos | 25 |
 
+### Participação por pessoa
+
+A rubrica avalia participação equilibrada. Esta é a distribuição resultante:
+
+| Quem | Blocos | Total |
+| --- | --- | --- |
+| Luiz | Checkov 2,5 + lab fases 1 e 2, 6 | 8,5 min |
+| Anderson | ZAP 2,5 + lab fases 3 e 4, 6 | 8,5 min |
+| Guylherme | abertura 3 + Semgrep 2,5 | 5,5 min |
+| Bruno | Dependency-Check 2,5 + conclusão 3 | 5,5 min |
+
+Luiz e Anderson ficam com mais tempo porque conduzem o laboratório das ferramentas que são suas. A abertura foi atribuída a Guylherme justamente para compensar, já que ele não conduz laboratório.
+
 ## Mapa de slides
 
-### Abertura, Luiz, 3 min
+### Abertura, Guylherme, 3 min
 
 | # | Conteúdo |
 | --- | --- |
@@ -77,6 +108,17 @@ Todos medidos pelo grupo, nenhum vem de documentação.
 
 1. Qual o identificador do check que o Checkov reprovou, e quantos checks passaram depois da correção?
 2. Quantos alertas de risco High o ZAP levantou antes da correção, e qual o CWE do XSS refletido?
+
+## Cronograma e descontos
+
+| Marco | Entrega |
+| --- | --- |
+| D-10 | Sumário aprovado e escolha das 2 ferramentas do lab |
+| D-2 | Repositório publicado com o LAB.md acessível à turma |
+| D-1 | PDF do documento, `.pptx` e link do repositório |
+| D-0 | Apresentação, 30 minutos |
+
+Descontos: 2 pontos por minuto excedido, 5 pontos por dia de atraso na entrega, 10 pontos se o repositório não sair com 24 horas de antecedência.
 
 ## Checklist antes de apresentar
 
