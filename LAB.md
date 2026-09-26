@@ -5,12 +5,13 @@ Duas ferramentas, duas categorias. Em cada uma: rode o scan, veja o gate quebrar
 ## Pré-requisitos
 
 - Docker e Docker Compose
-- `git clone` deste repositório feito **antes** da aula
+- Git
 
-Todos os comandos rodam a partir de `lab/`:
+Clone o repositório **antes** da aula. Todos os comandos rodam a partir de `lab/`:
 
 ```bash
-cd lab
+git clone https://github.com/org-cloud-security/cp01-devsecops.fiap.git
+cd cp01-devsecops.fiap/lab
 ```
 
 ## Fase 1: Checkov encontra SSH aberto
