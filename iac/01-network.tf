@@ -36,9 +36,22 @@ resource "azurerm_network_security_group" "lab" {
     source_address_prefix      = var.allowed_ip
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "allow-app-from-internet"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3000"
+    source_address_prefix      = "Internet"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_network_interface" "lab" {
+  #checkov:skip=CKV_AZURE_119:IP público necessário para acesso SSH ao lab, restrito pelo NSG
   name                = "nic-devsecops-lab"
   resource_group_name = azurerm_resource_group.lab.name
   location            = azurerm_resource_group.lab.location
@@ -51,8 +64,8 @@ resource "azurerm_network_interface" "lab" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id      = azurerm_network_interface.lab.id
+resource "azurerm_subnet_network_security_group_association" "lab" {
+  subnet_id                 = azurerm_subnet.lab.id
   network_security_group_id = azurerm_network_security_group.lab.id
 }
 

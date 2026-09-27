@@ -5,11 +5,13 @@ resource "azurerm_linux_virtual_machine" "lab" {
   size                  = "Standard_B2s"
   admin_username        = "azureuser"
   network_interface_ids = [azurerm_network_interface.lab.id]
-  custom_data           = filebase64("${path.module}/scripts/cloud-init.sh")
+  custom_data           = filebase64("${path.module}/scripts/setup-vm.sh")
+
+  allow_extension_operations = false
 
   admin_ssh_key {
     username   = "azureuser"
-    public_key = file(pathexpand(var.ssh_public_key_path))
+    public_key = var.ssh_public_key
   }
 
   os_disk {
