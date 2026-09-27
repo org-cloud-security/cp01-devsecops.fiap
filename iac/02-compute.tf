@@ -7,7 +7,7 @@ resource "azurerm_linux_virtual_machine" "lab" {
   network_interface_ids = [azurerm_network_interface.lab.id]
   custom_data           = filebase64("${path.module}/scripts/setup-vm.sh")
 
-  # allow_extension_operations = false
+  allow_extension_operations = false
 
   admin_ssh_key {
     username   = "azureuser"
