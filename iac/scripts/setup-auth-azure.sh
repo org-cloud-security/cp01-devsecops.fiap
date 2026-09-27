@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO="org-cloud-security/cp01-devsecops.fiap"
+REPO="org-cloud-security@332274790/cp01-devsecops.fiap@1380661959"
 STORAGE_ACCOUNT="stdevsecopstfstate"
 STORAGE_RESOURCE_GROUP="rg-devsecops-tfstate"
 
