@@ -35,13 +35,13 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: terraform-fmt
-        run: terraform fmt -check
+        run:  terraform fmt -check
 
       - name: terraform-init
-        run: terraform init
+        run:  terraform init
 
       - name: terraform-validate
-        run: terraform validate
+        run:  terraform validate
 
       - name: terraform-sast-checkov
         uses: bridgecrewio/checkov-action@v12
@@ -50,4 +50,4 @@ jobs:
           framework: terraform
 
       - name: terraform-plan
-        run: terraform plan
+        run:  terraform plan
