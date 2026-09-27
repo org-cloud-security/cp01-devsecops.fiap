@@ -5,6 +5,14 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  backend "azurerm" {
+    resource_group_name  = "rg-devsecops-tfstate"
+    storage_account_name = "stdevsecopstfstate"
+    container_name       = "tfstate"
+    key                  = "lab.tfstate"
+    use_azuread_auth     = true
+  }
 }
 
 provider "azurerm" {
@@ -14,13 +22,12 @@ provider "azurerm" {
 variable "allowed_ip" {
   description = "IP público (CIDR) liberado para acessar a VM via SSH, ex.: 203.0.113.10/32"
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "179.135.148.89/32"
 }
 
-variable "ssh_public_key_path" {
-  description = "Caminho da chave pública SSH usada para acessar a VM"
+variable "ssh_public_key" {
+  description = "Conteúdo da chave pública SSH usada para acessar a VM"
   type        = string
-  default     = "~/.ssh/devsecops_lab.pub"
 }
 
 resource "azurerm_resource_group" "lab" {

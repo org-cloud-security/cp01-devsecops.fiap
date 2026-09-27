@@ -1,0 +1,44 @@
+name: iac-merge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "iac/**"
+
+jobs:
+  iac-merge:
+    name: "iac-merge"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: iac
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      ARM_USE_OIDC: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_APPLY }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup-terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: terraform-init
+        run: terraform init
+
+      - name: terraform-plan
+        run: terraform plan -out=tfplan
+
+      - name: terraform-apply
+        run: terraform apply tfplan
