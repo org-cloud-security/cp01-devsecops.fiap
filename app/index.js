@@ -7,7 +7,7 @@ const secret = tokens.secretSync();
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null } } }));
 
 app.use((req, res, next) => {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
