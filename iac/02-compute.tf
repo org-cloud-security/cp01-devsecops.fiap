@@ -1,4 +1,5 @@
 resource "azurerm_linux_virtual_machine" "lab" {
+  #checkov:skip=CKV_AZURE_50:extensão necessária para o deploy do container via az vm run-command
   name                  = "vm-devsecops-lab"
   resource_group_name   = azurerm_resource_group.lab.name
   location              = azurerm_resource_group.lab.location
@@ -7,7 +8,7 @@ resource "azurerm_linux_virtual_machine" "lab" {
   network_interface_ids = [azurerm_network_interface.lab.id]
   custom_data           = filebase64("${path.module}/scripts/setup-vm.sh")
 
-  allow_extension_operations = false
+  allow_extension_operations = true
 
   admin_ssh_key {
     username   = "azureuser"
