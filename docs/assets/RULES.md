@@ -1,7 +1,7 @@
 # Regras do projeto
 
 1. Todas descisões técnicas que ser fundamaentas com base em documentação oficial
-2. Commits devem seguir: https://github.com/iuricode/padroes-de-commits (sem emoji, sem co-author e commits e branc hs em ingles)
+2. Commits devem seguir: https://github.com/iuricode/padroes-de-commits (sem emoji, commits e branches em ingles, com `Co-authored-by` do dono da parte alterada conforme `docs/assets/TASKS.md`)
 3. O fluxo de gitflow vai funcionar da seguinte forma:
     - A branch main é protegida e só pode ter commits via PR, revisada pelos outros 3 membros do grupo 
     - A descrição das PRs deve ser escrita em pt-BR
