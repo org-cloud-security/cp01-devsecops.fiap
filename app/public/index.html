@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevSecOps - Grupo 1</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Check Point 01 - Grupo 1</h1>
+    <p>Toolchain OWASP · Pipeline tradicional</p>
+
+    <h2>As quatro frentes do pipeline</h2>
+    <div class="grid">
+      <article>
+        <h3>SAST · Semgrep</h3>
+        <p>Analisa o código-fonte próprio (white-box).</p>
+        <small>Estágio: Code / Build · App rodando: não</small>
+      </article>
+      <article>
+        <h3>SCA · Dependency-Check</h3>
+        <p>Analisa dependências de terceiros e licenças.</p>
+        <small>Estágio: Build · App rodando: não</small>
+      </article>
+      <article>
+        <h3>IaC · Checkov</h3>
+        <p>Analisa Terraform, CloudFormation, K8s, Docker e Helm.</p>
+        <small>Estágio: Code / Build / Deploy · App rodando: não</small>
+      </article>
+      <article>
+        <h3>DAST · OWASP ZAP</h3>
+        <p>Ataca a aplicação em execução (black-box).</p>
+        <small>Estágio: Test / Release · App rodando: sim</small>
+      </article>
+    </div>
+
+    <blockquote>
+      SAST não é SCA. SAST olha o código que a sua equipe escreveu. SCA olha as dependências de terceiros que você trouxe para dentro.
+    </blockquote>
+    <blockquote>
+      Shift-left não elimina o DAST. Ele é o único que exige a aplicação no ar.
+    </blockquote>
+  </main>
+</body>
+</html>
