@@ -71,3 +71,6 @@ O `zap-baseline.py` e o `zap-full-scan.py` classificam toda regra como WARN e en
 | Bruno Henrique | 566277 |
 | Anderson Huang | 565920 |
 | Guylherme Miguel | 562374 |
+
+
+
