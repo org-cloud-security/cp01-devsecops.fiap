@@ -1,0 +1,14 @@
+{
+  "name": "devsecops-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "csrf": "3.1.0",
+    "express": "5.2.1",
+    "helmet": "8.3.0"
+  }
+}
