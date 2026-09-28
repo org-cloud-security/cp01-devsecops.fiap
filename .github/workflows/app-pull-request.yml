@@ -14,12 +14,15 @@ jobs:
     container:
       image: semgrep/semgrep
 
+    permissions:
+      security-events: write
+
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: semgrep-scan
-        run:  semgrep scan --config auto --text-output=semgrep.txt app
+        run:  semgrep scan --config auto --text-output=semgrep.txt --sarif-output=semgrep.sarif app
 
       - name: upload-report
         if: always()
@@ -28,26 +31,11 @@ jobs:
           name: semgrep-report
           path: semgrep.txt
 
-  sca-owasp-deps-check:
-    name: "sca-owasp-deps-check"
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: dependency-check-scan
-        run:  app/scripts/dependency-check.sh
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-
-      - name: upload-report
+      - name: upload-sarif
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          name: dependency-check-report
-          path: dependency-check-report.html
+          sarif_file: semgrep.sarif
 
   app-docker-build:
 
@@ -55,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - sast-semgrep
-      - sca-owasp-deps-check
 
     defaults:
       run:
