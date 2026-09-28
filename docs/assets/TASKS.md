@@ -4,7 +4,7 @@
 
 | Membro | Ferramenta | Pastas | Extras |
 | --- | --- | --- | --- |
-| Luiz (TL) | Checkov | `iac/`, `.github/workflows/`, `docker-compose.yml`, `LAB.md` | `.tf` e Dockerfile inseguros, pipeline com gate |
+| Luiz (TL) | Checkov | `iac/`, `.github/workflows/`, `LAB.md` | `.tf` e Dockerfile inseguros, pipeline com gate |
 | Anderson | OWASP ZAP | `app/` | App vulnerável, análise dos 3 achados |
 | Bruno (relator) | Dependency-Check | `docs/document/`, `USO-DE-IA.md` | Seção f, ABNT, fontes |
 | Guylherme | Semgrep | `docs/slides/` | Slides, vídeo do plano B, 2 perguntas de verificação |

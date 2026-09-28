@@ -6,9 +6,8 @@ Ferramentas: Semgrep (SAST) · OWASP Dependency-Check (SCA) · Checkov (IaC) · 
 
 - [x] Eleger líder técnico e relator
 - [x] Escolher as 2 ferramentas do lab (categorias diferentes)
-- [ ] Escolher o alvo vulnerável e conferir se gera achados
-- [ ] Criar o repositório com README
-- [ ] Criar o esqueleto do `docker-compose.yml`
+- [x] Escolher o alvo vulnerável e conferir se gera achados
+- [x] Criar o repositório com README
 
 ## 2. Execução das 4 ferramentas
 
