@@ -1,0 +1,4 @@
+40012	FAIL	(Cross Site Scripting (Reflected))
+40014	FAIL	(Cross Site Scripting (Persistent))
+40018	FAIL	(SQL Injection)
+90020	FAIL	(Remote OS Command Injection)

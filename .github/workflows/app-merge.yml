@@ -8,7 +8,6 @@ on:
       - "app/**"
 
 jobs:
-  #[DOC] - https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images
   app-docker-push:
     name: "app-docker-push"
     runs-on: ubuntu-latest
@@ -35,7 +34,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.run_number }}
 
-  #[DOC] - https://learn.microsoft.com/en-us/cli/azure/vm/run-command#az-vm-run-command-invoke
   app-deploy:
     name: "app-deploy"
     runs-on: ubuntu-latest
@@ -59,3 +57,50 @@ jobs:
 
       - name: vm-run-command
         run:  az vm run-command invoke -g rg-devsecops-lab -n vm-devsecops-lab --command-id RunShellScript --scripts @app/scripts/deploy.sh --parameters ghcr.io/${{ github.repository }}:${{ github.run_number }}
+
+  dast-zap:
+    name: "dast-zap"
+    runs-on: ubuntu-latest
+    needs:
+      - app-deploy
+
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: zap-full-scan
+        uses: zaproxy/action-full-scan@v0.13.0
+        with:
+          target: ${{ vars.APP_URL }}
+          rules_file_name: .zap/rules.tsv
+          cmd_options: -I
+          fail_action: true
+
+  app-rollback:
+    name: "app-rollback"
+    runs-on: ubuntu-latest
+    needs:
+      - dast-zap
+    if: failure() && github.run_number > 1
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: azure-login
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_APPLY }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: vm-run-command
+        run:  az vm run-command invoke -g rg-devsecops-lab -n vm-devsecops-lab --command-id RunShellScript --scripts @app/scripts/deploy.sh --parameters ghcr.io/${{ github.repository }}:$(( ${{ github.run_number }} - 1 ))
