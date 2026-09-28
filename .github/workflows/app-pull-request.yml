@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: semgrep-scan
-        run:  semgrep scan --config auto --sarif-output=semgrep.sarif app
+        run:  semgrep scan --config auto --error --sarif-output=semgrep.sarif app
 
       - name: upload-sarif
         if: always()
