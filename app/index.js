@@ -18,7 +18,8 @@ app.use((req, res, next) => {
 app.use(express.static("public"));
 
 app.get("/hello", (req, res) => {
-  res.send("Hello, " + req.query.name);
+  // res.send("Hello, " + req.query.name);
+  res.type("text").send("Hello, " + req.query.name);
 });
 
 app.listen(3000, () => console.log("listening on port 3000"));
